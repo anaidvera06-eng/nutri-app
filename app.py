@@ -28,6 +28,17 @@ act_opciones = [
 ]
 actividad = st.sidebar.selectbox("Nivel de Actividad Física", act_opciones)
 medicamentos = st.sidebar.text_area("Farmacología Actual", "Ninguno")
+# --- CRÉDITOS DEL AUTOR (NUEVO) ---
+st.sidebar.markdown("---")
+st.sidebar.subheader("🎓 Créditos Académicos")
+st.sidebar.markdown("**Creado por:**")
+st.sidebar.markdown("Karen Anaid Hernández Vera")
+st.sidebar.markdown("**Carrera:**")
+st.sidebar.text("Licenciatura en Farmacia")
+st.sidebar.markdown("**Universidad:**")
+st.sidebar.text("Universidad Nacional Autónoma de México (UNAM)")
+st.sidebar.markdown("**Materia:**")
+st.sidebar.text("Nutrición")
 
 # --- 3. CÁLCULOS FISIOLÓGICOS ---
 talla_m = talla / 100
@@ -209,5 +220,6 @@ st.download_button(
 )
 
 st.warning("⚠️ **AVISO IMPORTANTE:** Esta aplicación es una herramienta de apoyo educativo y cálculo preliminar. Los resultados aquí mostrados **NO sustituyen** el diagnóstico, tratamiento o asesoría de un Licenciado en Nutrición o Médico especialista. Se recomienda acudir a consulta profesional para un plan personalizado.")
+
 
 
