@@ -7,8 +7,8 @@ st.set_page_config(page_title="Evaluación Nutricional", layout="wide")
 # --- TÍTULO PRINCIPAL ---
 st.title("🍎 Sistema de Evaluación Nutricional Integral")
 st.markdown("""
-Calculadora clínica completa: GET, IMC, ICC, Peso Ideal y Complexión.
-**Menús profesionales:** Porciones exactas en gramos y medidas caseras.
+Calculadora clínica completa: GET, IMC, ICC, Hidratación y Menús Personalizados.
+**Versión Profesional:** Porciones exactas y medidas caseras.
 """)
 
 # --- BARRA LATERAL (DATOS) ---
@@ -43,7 +43,7 @@ medicamentos = st.sidebar.text_area("Medicamentos", "Ninguno")
 talla_m = talla / 100
 imc = peso / (talla_m ** 2)
 
-# 2. Peso Ideal (Fórmula solicitada)
+# 2. Peso Ideal
 factor_peso_ideal = 23 if genero == "Masculino" else 21.5
 peso_ideal = (talla_m ** 2) * factor_peso_ideal
 
@@ -55,20 +55,19 @@ if genero == "Masculino":
 else:
     if icc >= 0.85: riesgo_icc = "Obesidad Central (Riesgo Alto)"
 
-# 4. Complexión Corporal (r = talla / muñeca)
+# 4. Complexión Corporal
 r = talla / muneca
 complexion = "Mediana" 
-
 if genero == "Masculino":
     if r > 10.4: complexion = "Pequeña"
     elif 9.6 <= r <= 10.4: complexion = "Mediana"
     else: complexion = "Grande"
-else: # Femenino
+else: 
     if r > 11: complexion = "Pequeña"
     elif 10.1 <= r <= 11: complexion = "Mediana"
     else: complexion = "Grande"
 
-# 5. TMB y GET (Mifflin-St Jeor)
+# 5. TMB y GET
 if genero == "Masculino":
     tmb = (10 * peso) + (6.25 * talla) - (5 * edad) + 5
 else:
@@ -83,40 +82,41 @@ factores_actividad = {
 }
 get = tmb * factores_actividad[actividad]
 
+# 6. Hidratación
+agua_ml = peso * 35
+
 # --- MOSTRAR RESULTADOS ---
 st.markdown("---")
-col_izq, col_der = st.columns(2)
+col1, col2, col3 = st.columns(3)
 
-with col_izq:
-    st.subheader("📊 Diagnóstico Antropométrico")
-    
-    # IMC
+with col1:
+    st.subheader("📊 Diagnóstico")
     estado_imc = "Normal"
     if imc < 18.5: estado_imc = "Bajo Peso"
     elif imc >= 25 and imc < 30: estado_imc = "Sobrepeso"
     elif imc >= 30: estado_imc = "Obesidad"
-    st.metric("IMC Actual", f"{imc:.1f}", estado_imc)
-    
-    col_a, col_b = st.columns(2)
-    col_a.metric("Peso Ideal", f"{peso_ideal:.1f} kg")
-    col_b.metric("Complexión", complexion, f"r={r:.1f}")
-    
-    st.metric("ICC (Cintura-Cadera)", f"{icc:.2f}", riesgo_icc)
+    st.metric("IMC", f"{imc:.1f}", estado_imc)
+    st.metric("Peso Ideal", f"{peso_ideal:.1f} kg")
 
-with col_der:
-    st.subheader("⚡ Requerimiento Energético")
-    st.metric("Metabolismo Basal (TMB)", f"{int(tmb)} kcal")
-    st.metric("Gasto Total (GET)", f"{int(get)} kcal/día", "Meta Calórica")
-    
-    if "Diabetes Tipo 2" in enfermedades:
-        st.warning("⚠️ Menú ajustado: bajo en azúcares simples.")
-    if "Hipertensión" in enfermedades:
-        st.warning("⚠️ Menú ajustado: bajo en sodio.")
+with col2:
+    st.subheader("⚡ Calorías")
+    st.metric("Metabolismo Basal", f"{int(tmb)} kcal")
+    st.metric("Gasto Total (GET)", f"{int(get)} kcal", "Meta Diaria")
+
+with col3:
+    st.subheader("💧 Hidratación")
+    st.metric("Agua Diaria", f"{int(agua_ml)} ml", f"{int(agua_ml/250)} vasos")
+    st.metric("Complexión", complexion)
+
+# Alertas Clínicas
+if "Diabetes Tipo 2" in enfermedades:
+    st.warning("⚠️ **Alerta Clínica:** Menú con índice glucémico controlado.")
+if "Hipertensión" in enfermedades:
+    st.warning("⚠️ **Alerta Clínica:** Menú bajo en sodio.")
 
 # --- PLAN DE ACTIVIDAD FÍSICA ---
 st.markdown("---")
 st.header("🏃 Rutina de Ejercicio")
-
 rutina = ""
 if "Sedentario" in actividad or "Ligero" in actividad:
     rutina = "**Activación:** 🚶 Caminata veloz: 30 min (3-4 veces/sem) + 🧘 Estiramientos."
@@ -124,100 +124,80 @@ elif "Moderado" in actividad:
     rutina = "**Mantenimiento:** 🏃 Trote/Bici: 45 min (3 veces/sem) + 💪 Fuerza ligera."
 else:
     rutina = "**Rendimiento:** 🏋️ Pesas: 60 min (4 veces/sem) + ⚡ Cardio HIIT."
-
 st.info(rutina)
 
-# --- MENÚ SEMANAL INTELIGENTE (GRAMOS Y MEDIDAS) ---
+# --- MENÚ SEMANAL ---
 st.markdown("---")
 st.header(f"🥗 Plan de Alimentación (Ajustado a {int(get)} kcal)")
 
-# Factor de Ajuste: Base 2000 kcal.
+# Factor de Ajuste
 f = get / 2000 
 
-# Función para formatear texto
 def cant(cantidad, unidad, alimento):
     cantidad_ajustada = cantidad * f
-    # Si es gramaje, redondeamos a enteros (ej. 100g)
     if unidad == "g" or unidad == "ml":
         return f"{int(cantidad_ajustada)} {unidad} {alimento}"
-    # Si son tazas o piezas, usamos decimales (ej. 1.5 tzas)
     return f"{cantidad_ajustada:.1f} {unidad} {alimento}"
 
-# BASE DE DATOS DE MENÚS
 menus = {
     "Lunes": {
         "Des": f"{cant(40, 'g', 'Avena cruda')} + {cant(100, 'g', 'Manzana')} + {cant(15, 'g', 'Nueces')}",
-        "Com": f"{cant(120, 'g', 'Pechuga asada')} + {cant(1, 'tza', 'Quinoa cocida')} + Verduras",
-        "Cen": f"{cant(100, 'g', 'Atún agua')} + Ensalada + {cant(1, 'pza', 'Tostada horneada')}",
+        "Com": f"{cant(120, 'g', 'Pechuga asada')} + {cant(1, 'tza', 'Quinoa')} + Verduras",
+        "Cen": f"{cant(100, 'g', 'Atún agua')} + Ensalada + {cant(1, 'pza', 'Tostada')}",
         "Macros": {"CH": 220, "PRO": 110, "GR": 65}
     },
     "Martes": {
-        "Des": f"{cant(2, 'pzas', 'Tostadas')} + {cant(60, 'g', 'Aguacate')} + {cant(100, 'g', 'Huevo (aprox 2 pzas)')}",
-        "Com": f"{cant(1.5, 'tza', 'Lentejas cocidas')} + {cant(1, 'tza', 'Verduras vapor')}",
+        "Des": f"{cant(2, 'pzas', 'Tostadas')} + {cant(60, 'g', 'Aguacate')} + {cant(100, 'g', 'Huevo')}",
+        "Com": f"{cant(1.5, 'tza', 'Lentejas')} + {cant(1, 'tza', 'Verduras vapor')}",
         "Cen": f"{cant(1, 'tza', 'Crema Calabaza')} + {cant(60, 'g', 'Queso Panela')}",
         "Macros": {"CH": 190, "PRO": 105, "GR": 70}
     },
     "Miércoles": {
-        "Des": f"Licuado: {cant(250, 'ml', 'Leche light')} + {cant(100, 'g', 'Plátano')} + {cant(15, 'g', 'Crema cacahuate')}",
-        "Com": f"{cant(150, 'g', 'Pescado empapelado')} + {cant(100, 'g', 'Arroz integral cocido')}",
-        "Cen": f"{cant(3, 'pzas', 'Tacos lechuga')} con {cant(90, 'g', 'Pollo deshebrado')}",
+        "Des": f"Licuado: {cant(250, 'ml', 'Leche')} + {cant(100, 'g', 'Plátano')} + {cant(15, 'g', 'Cacahuate')}",
+        "Com": f"{cant(150, 'g', 'Pescado')} + {cant(100, 'g', 'Arroz integral')}",
+        "Cen": f"{cant(3, 'pzas', 'Tacos lechuga')} + {cant(90, 'g', 'Pollo')}",
         "Macros": {"CH": 210, "PRO": 125, "GR": 60}
     },
     "Jueves": {
         "Des": f"{cant(150, 'g', 'Yogurt griego')} + {cant(80, 'g', 'Frutos rojos')}",
         "Com": f"{cant(120, 'g', 'Carne magra')} + Ejotes + {cant(1, 'pza', 'Tortilla')}",
-        "Cen": f"{cant(2, 'pzas', 'Nopales asados')} + {cant(80, 'g', 'Queso Oaxaca')}",
+        "Cen": f"{cant(2, 'pzas', 'Nopales')} + {cant(80, 'g', 'Queso Oaxaca')}",
         "Macros": {"CH": 150, "PRO": 130, "GR": 65}
     },
     "Viernes": {
-        "Des": f"{cant(2, 'pzas', 'Hotcakes avena')} + {cant(50, 'g', 'Huevo (1 pza)')}",
+        "Des": f"{cant(2, 'pzas', 'Hotcakes avena')} + {cant(50, 'g', 'Huevo')}",
         "Com": f"{cant(1.5, 'tza', 'Pasta integral')} + {cant(100, 'g', 'Pollo')} + Salsa",
-        "Cen": f"Sándwich: {cant(2, 'rebs', 'Pan integral')} + {cant(60, 'g', 'Pavo')}",
+        "Cen": f"Sándwich: {cant(2, 'rebs', 'Pan')} + {cant(60, 'g', 'Pavo')}",
         "Macros": {"CH": 240, "PRO": 115, "GR": 55}
     },
     "Sábado": {
-        "Des": f"{cant(100, 'g', 'Huevos mexicana')} + {cant(1, 'pza', 'Tortilla maíz')}",
-        "Com": f"{cant(150, 'g', 'Ceviche pescado')} + {cant(2, 'pzas', 'Tostadas')}",
-        "Cen": f"Brochetas: {cant(80, 'g', 'Queso panela')} y Tomate cherry",
+        "Des": f"{cant(100, 'g', 'Huevos mexicana')} + {cant(1, 'pza', 'Tortilla')}",
+        "Com": f"{cant(150, 'g', 'Ceviche')} + {cant(2, 'pzas', 'Tostadas')}",
+        "Cen": f"Brochetas: {cant(80, 'g', 'Queso panela')} y Tomate",
         "Macros": {"CH": 180, "PRO": 120, "GR": 75}
     },
     "Domingo": {
-        "Des": f"{cant(1, 'pza', 'Pan francés integral')} con canela",
-        "Com": f"{cant(1, 'pza', 'Pierna Pollo')} sin piel + Ensalada",
-        "Cen": f"{cant(1, 'pza', 'Quesadilla maíz')} + Flor calabaza",
+        "Des": f"{cant(1, 'pza', 'Pan francés')} con canela",
+        "Com": f"{cant(1, 'pza', 'Pierna Pollo')} + Ensalada",
+        "Cen": f"{cant(1, 'pza', 'Quesadilla')} + Flor calabaza",
         "Macros": {"CH": 200, "PRO": 100, "GR": 80}
     }
 }
 
-# Ajustes Patológicos
 if "Diabetes Tipo 2" in enfermedades:
     menus["Lunes"]["Des"] = f"{cant(30, 'g', 'Avena')} + Nueces (Sin Manzana)"
 
-# Generar Tabla
 data_menu = []
+total_macros = {"Carbohidratos": 0, "Proteínas": 0, "Grasas": 0}
+
 for dia, info in menus.items():
-    ch_ajustado = int(info["Macros"]["CH"] * f)
-    pro_ajustado = int(info["Macros"]["PRO"] * f)
-    gr_ajustado = int(info["Macros"]["GR"] * f)
-    kcal_dia = (ch_ajustado * 4) + (pro_ajustado * 4) + (gr_ajustado * 9)
+    ch = int(info["Macros"]["CH"] * f)
+    pro = int(info["Macros"]["PRO"] * f)
+    gr = int(info["Macros"]["GR"] * f)
+    kcal = (ch * 4) + (pro * 4) + (gr * 9)
+    total_macros["Carbohidratos"] += ch
+    total_macros["Proteínas"] += pro
+    total_macros["Grasas"] += gr
 
     data_menu.append({
-        "Día": dia,
-        "Desayuno": info["Des"],
-        "Colación 1": cant(1, "pza", "Fruta (aprox 120g)"),
-        "Comida": info["Com"],
-        "Colación 2": cant(1, "pza", "Gelatina Light"),
-        "Cena": info["Cen"],
-        "Carbos (g)": ch_ajustado,
-        "Proteína (g)": pro_ajustado,
-        "Grasas (g)": gr_ajustado,
-        "Kcal": kcal_dia 
-    })
-
-df = pd.DataFrame(data_menu)
-st.dataframe(df, use_container_width=True, hide_index=True)
-
-st.success(f"✅ Menú calculado para cubrir **{int(get)} kcal** (Porciones ajustadas).")
-
-# Botón Descarga
-st.download_button("📥 Descargar Plan (CSV)", df.to_csv(index=False).encode('utf-8'), "dieta_profesional.csv", "text/csv")
+        "Día": dia
