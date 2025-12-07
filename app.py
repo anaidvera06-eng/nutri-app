@@ -5,7 +5,7 @@ import pandas as pd
 st.set_page_config(page_title="NutriGenius Pro", layout="wide")
 
 # --- TÍTULO ---
-st.title("🍎 NutriGenius Pro: Evaluación Nutricional Completa")
+st.title("🍎 Sistema de Evaluación Nutricional Integral")
 st.markdown("""
 Calculadora clínica de GET, IMC, ICC, Peso Ideal y Complexión Corporal.
 Genera planes de alimentación y ejercicio personalizados.
@@ -172,3 +172,4 @@ st.dataframe(df, use_container_width=True, hide_index=True)
 
 # Botón Descarga
 st.download_button("📥 Descargar Plan (CSV)", df.to_csv(index=False).encode('utf-8'), "dieta.csv", "text/csv")
+
