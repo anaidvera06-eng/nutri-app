@@ -2,22 +2,32 @@ import streamlit as st
 import pandas as pd
 
 # --- 1. CONFIGURACIÓN ---
-st.set_page_config(page_title="NutriMeta", layout="wide")
-st.title("🍎 NutriMeta: Peso Ideal y Menús")
+st.set_page_config(page_title="NutriPro Final", layout="wide")
+st.title("🍎 Sistema Nutricional Integral")
+st.markdown("Calculadora clínica completa: Meta de Peso, Menús Exactos, Ejercicio y Guía Educativa.")
 
-# --- 2. DATOS ---
+# --- 2. DATOS DEL PACIENTE ---
 st.sidebar.header("Datos Personales")
 genero = st.sidebar.selectbox("Género", ["Masculino", "Femenino"])
 edad = st.sidebar.number_input("Edad", 10, 100, 30)
 peso = st.sidebar.number_input("Peso (kg)", 30.0, 200.0, 85.0)
 talla = st.sidebar.number_input("Talla (cm)", 100, 250, 170)
 
-st.sidebar.header("Medidas")
+st.sidebar.header("Medidas Antropométricas")
 cintura = st.sidebar.number_input("Cintura (cm)", 40.0, 200.0, 95.0)
 cadera = st.sidebar.number_input("Cadera (cm)", 40.0, 200.0, 105.0)
 muneca = st.sidebar.number_input("Muñeca (cm)", 10.0, 30.0, 17.0)
-actividad = st.sidebar.selectbox("Actividad", 
-    ["Sedentario (1.2)", "Ligero (1.375)", "Moderado (1.55)", "Intenso (1.725)"])
+
+st.sidebar.header("Estilo de Vida")
+# OPCIONES DETALLADAS DE ACTIVIDAD
+act_opciones = [
+    "Sedentario (Poco o nada de ejercicio)",
+    "Ligero (1-3 días por semana)",
+    "Moderado (3-5 días por semana)",
+    "Intenso (6-7 días por semana)",
+    "Muy Intenso (Doble sesión/Atleta)"
+]
+actividad = st.sidebar.selectbox("Nivel Actividad", act_opciones)
 medicamentos = st.sidebar.text_area("Medicamentos", "Ninguno")
 
 # --- 3. CÁLCULOS ---
@@ -42,7 +52,7 @@ else:
 icc = cintura / cadera
 riesgo_icc = "Bajo"
 limite = 0.90 if genero == "Masculino" else 0.85
-if icc >= limite: riesgo_icc = "Alto"
+if icc >= limite: riesgo_icc = "Alto (Obesidad Central)"
 
 # TMB y GET
 if genero == "Masculino":
@@ -50,34 +60,51 @@ if genero == "Masculino":
 else:
     tmb = (10 * peso) + (6.25 * talla) - (5 * edad) - 161
 
+# Asignar Factor numérico basado en la selección de texto
 fa = 1.2
 if "Ligero" in actividad: fa = 1.375
 if "Moderado" in actividad: fa = 1.55
 if "Intenso" in actividad: fa = 1.725
+if "Muy Intenso" in actividad: fa = 1.9
 get_mant = tmb * fa
 
-# META
+# META CALÓRICA
 meta_kcal = get_mant
-objetivo = "MANTENER"
+objetivo = "MANTENER PESO"
 if imc > 25:
-    objetivo = "BAJAR (Déficit)"
+    objetivo = "BAJAR PESO (Déficit -500)"
     meta_kcal = get_mant - 500
     if meta_kcal < 1200: meta_kcal = 1200
 elif imc < 18.5:
-    objetivo = "SUBIR (Superávit)"
+    objetivo = "SUBIR PESO (Superávit +300)"
     meta_kcal = get_mant + 300
 
-# --- 4. RESULTADOS ---
+# --- 4. RESULTADOS Y RECOMENDACIONES ---
 st.markdown("---")
 c1, c2, c3 = st.columns(3)
-c1.metric("IMC", f"{imc:.1f}", f"Ideal: {peso_ideal:.1f}kg")
+c1.metric("IMC Actual", f"{imc:.1f}", f"Ideal: {peso_ideal:.1f}kg")
 c2.metric("META DIARIA", f"{int(meta_kcal)} kcal", objetivo)
 c3.metric("Gasto Actual", f"{int(get_mant)} kcal", "Mantenimiento")
-st.info(f"Complexión: {complexion} | ICC: {icc:.2f} ({riesgo_icc}) | Agua: {int(peso*35)} ml")
 
-# --- 5. MENÚ SEGURO (LÍNEAS CORTAS) ---
+st.info(f"**Análisis:** Complexión {complexion} | ICC {icc:.2f} ({riesgo_icc}) | Agua: {int(peso*35)} ml/día")
+
+# --- 5. RECOMENDACIÓN DE EJERCICIO (NUEVO) ---
 st.markdown("---")
-st.header(f"🥗 Menú Objetivo ({int(meta_kcal)} kcal)")
+st.header("🏃 Plan de Actividad Física Recomendado")
+
+rutina = ""
+if "Sedentario" in actividad or "Ligero" in actividad:
+    rutina = "**Fase de Activación:**\n* 🚶 **Cardio:** Caminata rápida 30 min (3 veces/semana).\n* 🧘 **Flexibilidad:** Estiramientos 10 min diarios.\n* 🎯 **Meta:** Lograr 5,000 pasos al día."
+elif "Moderado" in actividad:
+    rutina = "**Fase de Mantenimiento:**\n* 🏃 **Cardio:** Trote, Natación o Bici 45 min (3 veces/semana).\n* 💪 **Fuerza:** Ejercicios con peso corporal (2 veces/semana).\n* 🎯 **Meta:** Mantener frecuencia cardíaca en zona quema-grasa."
+else:
+    rutina = "**Fase de Rendimiento:**\n* 🏋️ **Fuerza:** Pesas/Gimnasio 60 min (4 veces/semana).\n* ⚡ **HIIT:** Intervalos alta intensidad 20 min (2 veces/semana).\n* 🎯 **Meta:** Aumentar masa muscular y resistencia."
+
+st.success(rutina)
+
+# --- 6. MENÚ OBJETIVO (LÍNEAS CORTAS) ---
+st.markdown("---")
+st.header(f"🥗 Menú Detallado ({int(meta_kcal)} kcal)")
 
 f = meta_kcal / 2000
 
@@ -85,7 +112,7 @@ def fila(dia, d, c, n, ch, pro, gr):
     return {
         "Día": dia, "Desayuno": d, "Comida": c, "Cena": n,
         "Total Kcal": int((ch*4 + pro*4 + gr*9)*f),
-        "CH (cal)": int(ch*4*f), "PRO (cal)": int(pro*4*f), "GR (cal)": int(gr*9*f)
+        "CH (kcal)": int(ch*4*f), "PRO (kcal)": int(pro*4*f), "GR (kcal)": int(gr*9*f)
     }
 
 lista = []
@@ -155,5 +182,25 @@ lista.append(fila("Domingo", d, c, n, 190, 125, 60))
 df = pd.DataFrame(lista)
 st.dataframe(df, use_container_width=True, hide_index=True)
 
-st.download_button("📥 Descargar (CSV)", df.to_csv(index=False).encode('utf-8'), "dieta.csv",)
+# --- 7. GLOSARIO EDUCATIVO (NUEVO) ---
+st.markdown("---")
+with st.expander("📖 Glosario: ¿Qué significan estos datos? (Clic aquí)"):
+    st.markdown("""
+    ### 1. IMC (Índice de Masa Corporal)
+    Es la relación entre tu peso y estatura. Es el estándar médico para saber si tienes bajo peso, peso normal o sobrepeso.
+    
+    ### 2. GET (Gasto Energético Total)
+    Son las calorías que "quemas" en un día completo (incluyendo dormir, trabajar y hacer ejercicio).
+    * **Si comes tus GET:** Mantienes tu peso.
+    * **Si comes menos (Meta):** Pierdes grasa.
+    
+    ### 3. ICC (Índice Cintura-Cadera)
+    Mide dónde se acumula la grasa.
+    * **Forma de Manzana (Riesgo Alto):** Grasa en el abdomen (peligroso para el corazón).
+    * **Forma de Pera (Riesgo Bajo):** Grasa en las caderas.
+    
+    ### 4. Complexión Corporal
+    Se mide con la muñeca. Determina el tamaño de tu esqueleto. Una persona de "huesos grandes" naturalmente debe pesar más que una de "huesos pequeños".
+    """)
 
+st.download_button("📥 Descargar Plan (CSV)", df.to_csv(index=False).encode('utf-8'), "plan_nutricional.csv", "text/csv")
