@@ -155,4 +155,5 @@ lista.append(fila("Domingo", d, c, n, 190, 125, 60))
 df = pd.DataFrame(lista)
 st.dataframe(df, use_container_width=True, hide_index=True)
 
-st.download_button("📥 Descargar (CSV)", df.to_csv(index=False).encode('utf-8'), "dieta.csv",
+st.download_button("📥 Descargar (CSV)", df.to_csv(index=False).encode('utf-8'), "dieta.csv",)
+
