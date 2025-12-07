@@ -3,7 +3,7 @@ import pandas as pd
 
 # --- 1. CONFIGURACIÓN ---
 st.set_page_config(page_title="NutriPro Científico", layout="wide")
-st.title("🍎 Sistema de Evaluación Nutricional Clínica")
+st.title("Sistema de Evaluación Nutricional Clínica")
 st.markdown("Herramienta de cálculo dietoterapéutico: Estimación de requerimientos, composición corporal y planificación alimentaria.")
 
 # --- 2. DATOS DEL PACIENTE ---
@@ -99,7 +99,7 @@ st.info(f"**Perfil Somático:** Complexión {complexion} | ICC: {icc:.2f} ({ries
 
 # --- 5. PRESCRIPCIÓN DE EJERCICIO ---
 st.markdown("---")
-st.header("🏃 Recomendación de Actividad Física")
+st.header("Recomendación de Actividad Física")
 
 rutina = ""
 if "Sedentario" in actividad or "Ligero" in actividad:
@@ -113,7 +113,7 @@ st.success(rutina)
 
 # --- 6. PLAN ALIMENTARIO DETALLADO ---
 st.markdown("---")
-st.header(f"🥗 Distribución Dietética ({int(meta_kcal)} kcal)")
+st.header(f"Distribución Dietética ({int(meta_kcal)} kcal)")
 
 f = meta_kcal / 2000
 
@@ -220,6 +220,7 @@ st.download_button(
 )
 
 st.warning("⚠️ **AVISO IMPORTANTE:** Esta aplicación es una herramienta de apoyo educativo y cálculo preliminar. Los resultados aquí mostrados **NO sustituyen** el diagnóstico, tratamiento o asesoría de un Licenciado en Nutrición o Médico especialista. Se recomienda acudir a consulta profesional para un plan personalizado.")
+
 
 
 
