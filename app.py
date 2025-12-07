@@ -166,4 +166,5 @@ menus = {
     },
     "Jueves": {
         "Des": f"{cant(150, 'g', 'Yogurt griego')} + {cant(80, 'g', 'Frutos rojos')}",
-        "Com": f"{cant(120, 'g', 'Carne magra')} + Ejotes + {
+        "Com": f"{cant(120, 'g', 'Carne magra')} + Ejotes + {"
+
