@@ -107,40 +107,41 @@ st.header("🥗 Menú Semanal Sugerido (Ejemplo Estructurado)")
 
 # Base de datos simplificada de menús
 desayuno_base = "Avena con frutas y nueces"
-... comida_base = "Pechuga de pollo a la plancha con quinoa y vegetales"
-... cena_base = "Ensalada de atún con galletas integrales"
-... 
-... # Ajustes por enfermedad (La "IA" ajustando la dieta)
-... if "Diabetes Tipo 2" in enfermedades:
-...     desayuno_base = "Omelet de espinacas (sin pan blanco) + té verde"
-...     comida_base = "Pescado al horno con brócoli y arroz integral (porción medida)"
-... 
-... if "Hipertensión" in enfermedades:
-...     cena_base = "Pechuga de pavo sin sal agregada + ensalada verde con aceite de oliva"
-... 
-... # Crear estructura de datos para la tabla
-... dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
-... menu_data = []
-... 
-... for dia in dias:
-...     menu_data.append({
-...         "Día": dia,
-...         "Desayuno": desayuno_base,
-...         "Refrigerio 1": "Manzana verde o Puñado de almendras",
-...         "Comida": comida_base,
-...         "Refrigerio 2": "Yogurt griego sin azúcar",
-...         "Cena": cena_base
-...     })
-... 
-... df_menu = pd.DataFrame(menu_data)
-... 
-... # Mostrar tabla interactiva
-... st.dataframe(df_menu, use_container_width=True, hide_index=True)
-... 
-... # Botón de descarga
-... st.download_button(
-...     label="📥 Descargar Plan Nutricional (CSV)",
-...     data=df_menu.to_csv(index=False).encode('utf-8'),
-...     file_name='plan_nutricional.csv',
-...     mime='text/csv',
+comida_base = "Pechuga de pollo a la plancha con quinoa y vegetales"
+cena_base = "Ensalada de atún con galletas integrales"
+ 
+# Ajustes por enfermedad (La "IA" ajustando la dieta)
+ if "Diabetes Tipo 2" in enfermedades:
+     desayuno_base = "Omelet de espinacas (sin pan blanco) + té verde"
+     comida_base = "Pescado al horno con brócoli y arroz integral (porción medida)"
+ 
+ if "Hipertensión" in enfermedades:
+     cena_base = "Pechuga de pavo sin sal agregada + ensalada verde con aceite de oliva"
+ 
+ # Crear estructura de datos para la tabla
+ dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+ menu_data = []
+ 
+ for dia in dias:
+     menu_data.append({
+         "Día": dia,
+         "Desayuno": desayuno_base,
+         "Refrigerio 1": "Manzana verde o Puñado de almendras",
+         "Comida": comida_base,
+         "Refrigerio 2": "Yogurt griego sin azúcar",
+         "Cena": cena_base
+     })
+ 
+ df_menu = pd.DataFrame(menu_data)
+ 
+ # Mostrar tabla interactiva
+ st.dataframe(df_menu, use_container_width=True, hide_index=True)
+ 
+ # Botón de descarga
+ st.download_button(
+     label="📥 Descargar Plan Nutricional (CSV)",
+     data=df_menu.to_csv(index=False).encode('utf-8'),
+     file_name='plan_nutricional.csv',
+     mime='text/csv',
+
 
