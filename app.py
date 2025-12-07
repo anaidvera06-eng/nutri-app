@@ -101,35 +101,37 @@ else:
 
 st.markdown(rutina)
 
-# --- GENERADOR DE MENÚ SEMANAL ---
+# --- GENERADOR DE MENÚ SEMANAL VARIADO ---
 st.markdown("---")
-st.header("🥗 Menú Semanal Sugerido (Ejemplo Estructurado)")
+st.header("🥗 Menú Semanal Variado")
 
-# Base de datos simplificada de menús
-desayuno_base = "Avena con frutas y nueces"
-comida_base = "Pechuga de pollo a la plancha con quinoa y vegetales"
-cena_base = "Ensalada de atún con galletas integrales"
+# Definimos opciones diferentes para cada día
+menus_variados = {
+    "Lunes": {"Desayuno": "Avena con manzana y canela", "Comida": "Pollo a la plancha con quinoa", "Cena": "Ensalada de atún"},
+    "Martes": {"Desayuno": "Tostadas integrales con aguacate", "Comida": "Lentejas estofadas con verduras", "Cena": "Crema de calabaza"},
+    "Miércoles": {"Desayuno": "Batido de proteínas y plátano", "Comida": "Pescado al horno con papas", "Cena": "Omelet de espinacas"},
+    "Jueves": {"Desayuno": "Yogurt griego con frutos rojos", "Comida": "Carne magra salteada con pimientos", "Cena": "Ensalada caprese"},
+    "Viernes": {"Desayuno": "Hot cakes de avena y huevo", "Comida": "Pasta integral con pollo", "Cena": "Tacos de lechuga con pavo"},
+    "Sábado": {"Desayuno": "Huevos revueltos con champiñones", "Comida": "Bowl de arroz y salmón/atún", "Cena": "Sopa de verduras"},
+    "Domingo": {"Desayuno": "Pan francés integral", "Comida": "Pechuga rellena de espinacas", "Cena": "Tostadas horneadas de tinga de pollo"}
+}
 
-# Ajustes por enfermedad (La "IA" ajustando la dieta)
+# Ajuste automático si tiene Diabetes
 if "Diabetes Tipo 2" in enfermedades:
-    desayuno_base = "Omelet de espinacas (sin pan blanco) + té verde"
-    comida_base = "Pescado al horno con brócoli y arroz integral (porción medida)"
+    menus_variados["Lunes"]["Desayuno"] = "Avena (reducida) con nueces (sin azúcar)"
+    menus_variados["Miércoles"]["Desayuno"] = "Batido verde (sin plátano)"
+    menus_variados["Domingo"]["Desayuno"] = "Pan integral tostado con huevo"
 
-if "Hipertensión" in enfermedades:
-    cena_base = "Pechuga de pavo sin sal agregada + ensalada verde con aceite de oliva"
-
-# Crear estructura de datos para la tabla
-dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+# Crear la tabla de datos
 menu_data = []
-
-for dia in dias:
+for dia, comidas in menus_variados.items():
     menu_data.append({
         "Día": dia,
-        "Desayuno": desayuno_base,
-        "Refrigerio 1": "Manzana verde o Puñado de almendras",
-        "Comida": comida_base,
-        "Refrigerio 2": "Yogurt griego sin azúcar",
-        "Cena": cena_base
+        "Desayuno": comidas["Desayuno"],
+        "Refrigerio 1": "Fruta de temporada o almendras",
+        "Comida": comidas["Comida"],
+        "Refrigerio 2": "Gelatina sin azúcar o Yogurt",
+        "Cena": comidas["Cena"]
     })
 
 df_menu = pd.DataFrame(menu_data)
@@ -137,10 +139,10 @@ df_menu = pd.DataFrame(menu_data)
 # Mostrar tabla interactiva
 st.dataframe(df_menu, use_container_width=True, hide_index=True)
 
-# Botón de descarga
+# Botón de descarga actualizado
 st.download_button(
-    label="📥 Descargar Plan Nutricional (CSV)",
+    label="📥 Descargar Menú Semanal (CSV)",
     data=df_menu.to_csv(index=False).encode('utf-8'),
-    file_name='plan_nutricional.csv',
+    file_name='plan_nutricional_semanal.csv',
     mime='text/csv',
 )
