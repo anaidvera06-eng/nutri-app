@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 
 # --- 1. CONFIGURACIÓN ---
-st.set_page_config(page_title="NutriPro Final", layout="wide")
+st.set_page_config(page_title="NutriPro Excel", layout="wide")
 st.title("🍎 Sistema Nutricional Integral")
 st.markdown("Calculadora clínica completa: Meta de Peso, Menús Exactos, Ejercicio y Guía Educativa.")
 
@@ -19,7 +19,6 @@ cadera = st.sidebar.number_input("Cadera (cm)", 40.0, 200.0, 105.0)
 muneca = st.sidebar.number_input("Muñeca (cm)", 10.0, 30.0, 17.0)
 
 st.sidebar.header("Estilo de Vida")
-# OPCIONES DETALLADAS DE ACTIVIDAD
 act_opciones = [
     "Sedentario (Poco o nada de ejercicio)",
     "Ligero (1-3 días por semana)",
@@ -60,7 +59,6 @@ if genero == "Masculino":
 else:
     tmb = (10 * peso) + (6.25 * talla) - (5 * edad) - 161
 
-# Asignar Factor numérico basado en la selección de texto
 fa = 1.2
 if "Ligero" in actividad: fa = 1.375
 if "Moderado" in actividad: fa = 1.55
@@ -79,7 +77,7 @@ elif imc < 18.5:
     objetivo = "SUBIR PESO (Superávit +300)"
     meta_kcal = get_mant + 300
 
-# --- 4. RESULTADOS Y RECOMENDACIONES ---
+# --- 4. RESULTADOS ---
 st.markdown("---")
 c1, c2, c3 = st.columns(3)
 c1.metric("IMC Actual", f"{imc:.1f}", f"Ideal: {peso_ideal:.1f}kg")
@@ -88,9 +86,9 @@ c3.metric("Gasto Actual", f"{int(get_mant)} kcal", "Mantenimiento")
 
 st.info(f"**Análisis:** Complexión {complexion} | ICC {icc:.2f} ({riesgo_icc}) | Agua: {int(peso*35)} ml/día")
 
-# --- 5. RECOMENDACIÓN DE EJERCICIO (NUEVO) ---
+# --- 5. EJERCICIO ---
 st.markdown("---")
-st.header("🏃 Plan de Actividad Física Recomendado")
+st.header("🏃 Plan de Actividad Física")
 
 rutina = ""
 if "Sedentario" in actividad or "Ligero" in actividad:
@@ -102,7 +100,7 @@ else:
 
 st.success(rutina)
 
-# --- 6. MENÚ OBJETIVO (LÍNEAS CORTAS) ---
+# --- 6. MENÚ DETALLADO ---
 st.markdown("---")
 st.header(f"🥗 Menú Detallado ({int(meta_kcal)} kcal)")
 
@@ -182,25 +180,31 @@ lista.append(fila("Domingo", d, c, n, 190, 125, 60))
 df = pd.DataFrame(lista)
 st.dataframe(df, use_container_width=True, hide_index=True)
 
-# --- 7. GLOSARIO EDUCATIVO (NUEVO) ---
+# --- 7. GLOSARIO ---
 st.markdown("---")
-with st.expander("📖 Glosario: ¿Qué significan estos datos? (Clic aquí)"):
+with st.expander("📖 Glosario: ¿Qué significan estos datos?"):
     st.markdown("""
     ### 1. IMC (Índice de Masa Corporal)
-    Es la relación entre tu peso y estatura. Es el estándar médico para saber si tienes bajo peso, peso normal o sobrepeso.
+    Relación peso/estatura. Indica si tienes bajo peso, normal o sobrepeso.
     
     ### 2. GET (Gasto Energético Total)
-    Son las calorías que "quemas" en un día completo (incluyendo dormir, trabajar y hacer ejercicio).
-    * **Si comes tus GET:** Mantienes tu peso.
-    * **Si comes menos (Meta):** Pierdes grasa.
+    Calorías que gastas al día.
+    * **Meta:** Son las calorías ajustadas (restando 500 para bajar de peso o sumando para subir).
     
     ### 3. ICC (Índice Cintura-Cadera)
-    Mide dónde se acumula la grasa.
-    * **Forma de Manzana (Riesgo Alto):** Grasa en el abdomen (peligroso para el corazón).
-    * **Forma de Pera (Riesgo Bajo):** Grasa en las caderas.
+    Mide distribución de grasa. Si es alto, hay riesgo cardiovascular.
     
-    ### 4. Complexión Corporal
-    Se mide con la muñeca. Determina el tamaño de tu esqueleto. Una persona de "huesos grandes" naturalmente debe pesar más que una de "huesos pequeños".
+    ### 4. Complexión
+    Tamaño de tu estructura ósea (muñeca).
     """)
 
-st.download_button("📥 Descargar Plan (CSV)", df.to_csv(index=False).encode('utf-8'), "plan_nutricional.csv", "text/csv")
+# BOTÓN DE DESCARGA ARREGLADO PARA EXCEL ESPAÑOL
+# Usamos sep=';' para que Excel separe bien las columnas
+csv = df.to_csv(index=False, sep=';').encode('utf-8-sig')
+
+st.download_button(
+    label="📥 Descargar Plan (Compatible Excel)",
+    data=csv,
+    file_name="plan_nutricional.csv",
+    mime="text/csv"
+)
