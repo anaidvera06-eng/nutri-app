@@ -1,78 +1,79 @@
 import streamlit as st
 import pandas as pd
 
-# 1. Configuración inicial (Siempre va primero)
+# 1. Configuración
 st.set_page_config(page_title="NutriApp", layout="wide")
 st.title("🍎 Evaluación Nutricional")
-st.markdown("Calculadora de GET, IMC, Hidratación y Menú.")
 
-# 2. Barra Lateral (Inputs)
+# 2. Datos (Barra Lateral)
 st.sidebar.header("Datos del Paciente")
-nombre = st.sidebar.text_input("Nombre", "Paciente")
 genero = st.sidebar.selectbox("Género", ["Masculino", "Femenino"])
 edad = st.sidebar.number_input("Edad", 10, 100, 25)
 peso = st.sidebar.number_input("Peso (kg)", 30.0, 200.0, 70.0)
 talla = st.sidebar.number_input("Talla (cm)", 100, 250, 170)
+actividad = st.sidebar.selectbox("Nivel Actividad", 
+    ["Sedentario", "Ligero", "Moderado", "Intenso"])
 
-st.sidebar.header("Medidas")
-cintura = st.sidebar.number_input("Cintura (cm)", 50.0, 150.0, 80.0)
-cadera = st.sidebar.number_input("Cadera (cm)", 50.0, 150.0, 95.0)
-muneca = st.sidebar.number_input("Muñeca (cm)", 10.0, 25.0, 16.0)
+# 3. Cálculos (Backend)
+imc = peso / ((talla/100)**2)
 
-st.sidebar.header("Actividad Física")
-# Usamos claves simples para evitar errores de texto
-opcion_actividad = st.sidebar.selectbox("Nivel", 
-    ["Sedentario (1.2)", "Ligero (1.375)", "Moderado (1.55)", "Intenso (1.725)", "Muy Intenso (1.9)"])
+# Fórmula TMB simplificada en una línea
+if genero == "Masculino": tmb = (10*peso) + (6.25*talla) - (5*edad) + 5
+else: tmb = (10*peso) + (6.25*talla) - (5*edad) - 161
 
-# 3. Cálculos Matemáticos (Backend)
-# Extraemos el valor numérico de la actividad
-if "Sedentario" in opcion_actividad: factor = 1.2
-elif "Ligero" in opcion_actividad: factor = 1.375
-elif "Moderado" in opcion_actividad: factor = 1.55
-elif "Intenso" in opcion_actividad: factor = 1.725
-else: factor = 1.9
+# Diccionario simple de factores
+factores = {"Sedentario":1.2, "Ligero":1.375, "Moderado":1.55, "Intenso":1.725}
+get = tmb * factores[actividad]
+agua = peso * 35
 
-# Fórmulas
-talla_m = talla / 100
-imc = peso / (talla_m * talla_m)
-agua_litros = (peso * 35) / 1000
-
-# TMB (Mifflin-St Jeor)
-if genero == "Masculino":
-    tmb = (10 * peso) + (6.25 * talla) - (5 * edad) + 5
-else:
-    tmb = (10 * peso) + (6.25 * talla) - (5 * edad) - 161
-
-get = tmb * factor
-
-# Diagnósticos simples
-diag_imc = "Normal"
-if imc < 18.5: diag_imc = "Bajo Peso"
-elif imc >= 25: diag_imc = "Sobrepeso/Obesidad"
-
-# 4. Mostrar Resultados (Frontend)
-st.markdown("---") # Línea separadora
-st.subheader("📊 Resultados del Paciente")
-
-col1, col2, col3 = st.columns(3)
-col1.metric("IMC Actual", f"{imc:.1f}", diag_imc)
-col2.metric("Calorías Diarias (GET)", f"{int(get)} kcal", "Meta")
-col3.metric("Agua Recomendada", f"{agua_litros:.1f} Litros", f"{int(agua_litros*4)} vasos")
-
-# 5. Generador de Menú (Simplificado para evitar errores)
+# 4. Resultados (Frontend)
 st.markdown("---")
-st.subheader("🥗 Ejemplo de Menú Calculado")
+c1, c2, c3 = st.columns(3)
+c1.metric("IMC", f"{imc:.1f}", "Normal" if 18.5<=imc<25 else "Revisar")
+c2.metric("Calorías Diarias (GET)", f"{int(get)} kcal", "Meta")
+c3.metric("Agua Recomendada", f"{int(agua)} ml", f"{int(agua/250)} vasos")
 
-# Ajuste de porciones según calorías
-ajuste = get / 2000
+# 5. Menú Semanal (Estructura compacta Anti-Error)
+st.markdown("---")
+st.subheader("🥗 Menú Sugerido")
 
-# Creamos el menú directo sin diccionarios complejos
-datos_menu = [
-    {"Día": "Lunes", "Desayuno": f"{int(40*ajuste)}g Avena + Manzana", "Comida": f"{int(120*ajuste)}g Pollo + Quinoa", "Cena": "Ensalada Atún"},
-    {"Día": "Martes", "Desayuno": "Tostadas con Huevo", "Comida": f"{int(1.5*ajuste)} tzas Lentejas", "Cena": "Crema Calabaza"},
-    {"Día": "Miércoles", "Desayuno": "Licuado Plátano", "Comida": f"{int(150*ajuste)}g Pescado + Arroz", "Cena": "Tacos Lechuga"},
-    {"Día": "Jueves", "Desayuno": "Yogurt con Fruta", "Comida": f"{int(120*ajuste)}g Res + Verduras", "Cena": "Nopales Asados"},
-    {"Día": "Viernes", "Desayuno": "Hotcakes Avena", "Comida": "Pasta con Pollo", "Cena": "Sandwich Pavo"},
-    {"Día": "Sábado", "Desayuno": "Huevo Mexicana", "Comida": "Ceviche Pescado", "Cena": "Brochetas Queso"},
-    {"Día":1}
+# Creamos el menú por columnas (más difícil de romper al copiar)
+df = pd.DataFrame({
+    "Día": ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"],
+    "Desayuno": [
+        "Avena cocida + Manzana", 
+        "Huevo revuelto + Tostadas", 
+        "Licuado (Leche+Plátano)", 
+        "Yogurt Griego + Fruta", 
+        "Hotcakes de Avena", 
+        "Huevo a la Mexicana", 
+        "Pan Francés Integral"
+    ],
+    "Comida": [
+        "Pechuga Pollo + Quinoa", 
+        "Lentejas + Arroz", 
+        "Pescado Empapelado", 
+        "Carne Res + Verduras", 
+        "Pasta Integral + Pollo", 
+        "Ceviche de Pescado", 
+        "Pollo Rostizado + Ensalada"
+    ],
+    "Cena": [
+        "Ensalada de Atún", 
+        "Quesadillas (Panela)", 
+        "Tacos de Lechuga", 
+        "Nopales Asados + Queso", 
+        "Sandwich de Pavo", 
+        "Brochetas Caprese", 
+        "Sopa de Verduras"
+    ]
+})
 
+st.dataframe(df, use_container_width=True, hide_index=True)
+
+# 6. Glosario y Cierre
+with st.expander("📖 Ayuda: ¿Qué significan estos datos?"):
+    st.write(f"**IMC:** Tu índice es {imc:.1f}. Lo ideal es entre 18.5 y 24.9.")
+    st.write(f"**GET:** Necesitas {int(get)} calorías para mantener tu peso.")
+
+st.success("✅ Aplicación cargada correctamente.")
