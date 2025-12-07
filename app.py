@@ -182,7 +182,7 @@ st.dataframe(df, use_container_width=True, hide_index=True)
 
 # --- 7. GLOSARIO CIENTÍFICO (ACTUALIZADO) ---
 st.markdown("---")
-with st.expander("📖 Glosario de Términos Clínicos (Clic para desplegar)"):
+with st.expander("📖 Glosario de Términos Clínicos"):
     st.markdown("""
     ### 1. Índice de Masa Corporal (IMC)
     Indicador antropométrico que relaciona la masa corporal con la estatura al cuadrado ($kg/m^2$). Se utiliza para clasificar el estado nutricional (bajo peso, normopeso, sobrepeso, obesidad), aunque no distingue entre masa grasa y muscular.
@@ -209,3 +209,4 @@ st.download_button(
 )
 
 st.warning("⚠️ **AVISO IMPORTANTE:** Esta aplicación es una herramienta de apoyo educativo y cálculo preliminar. Los resultados aquí mostrados **NO sustituyen** el diagnóstico, tratamiento o asesoría de un Licenciado en Nutrición o Médico especialista. Se recomienda acudir a consulta profesional para un plan personalizado.")
+
