@@ -1,5 +1,3 @@
-Python 3.13.9 (tags/v3.13.9:8183fa5, Oct 14 2025, 14:09:13) [MSC v.1944 64 bit (AMD64)] on win32
-Enter "help" below or click "Help" above for more information.
 import streamlit as st
 import pandas as pd
 
@@ -145,3 +143,4 @@ desayuno_base = "Avena con frutas y nueces"
 ...     data=df_menu.to_csv(index=False).encode('utf-8'),
 ...     file_name='plan_nutricional.csv',
 ...     mime='text/csv',
+
