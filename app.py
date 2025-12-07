@@ -74,4 +74,5 @@ datos_menu = [
     {"Día": "Jueves", "Desayuno": "Yogurt con Fruta", "Comida": f"{int(120*ajuste)}g Res + Verduras", "Cena": "Nopales Asados"},
     {"Día": "Viernes", "Desayuno": "Hotcakes Avena", "Comida": "Pasta con Pollo", "Cena": "Sandwich Pavo"},
     {"Día": "Sábado", "Desayuno": "Huevo Mexicana", "Comida": "Ceviche Pescado", "Cena": "Brochetas Queso"},
-    {"Día":
+    {"Día":1}
+
