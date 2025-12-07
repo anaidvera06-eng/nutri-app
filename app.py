@@ -8,7 +8,7 @@ st.set_page_config(page_title="Evaluación Nutricional", layout="wide")
 st.title("🍎 Sistema de Evaluación Nutricional Integral")
 st.markdown("""
 Calculadora clínica completa: GET, IMC, ICC, Hidratación y Menús Personalizados.
-**Versión Profesional:** Porciones exactas y medidas caseras.
+**Versión Profesional:** Porciones exactas, medidas caseras y guía educativa.
 """)
 
 # --- BARRA LATERAL (DATOS) ---
@@ -144,60 +144,4 @@ menus = {
         "Des": f"{cant(40, 'g', 'Avena cruda')} + {cant(100, 'g', 'Manzana')} + {cant(15, 'g', 'Nueces')}",
         "Com": f"{cant(120, 'g', 'Pechuga asada')} + {cant(1, 'tza', 'Quinoa')} + Verduras",
         "Cen": f"{cant(100, 'g', 'Atún agua')} + Ensalada + {cant(1, 'pza', 'Tostada')}",
-        "Macros": {"CH": 220, "PRO": 110, "GR": 65}
-    },
-    "Martes": {
-        "Des": f"{cant(2, 'pzas', 'Tostadas')} + {cant(60, 'g', 'Aguacate')} + {cant(100, 'g', 'Huevo')}",
-        "Com": f"{cant(1.5, 'tza', 'Lentejas')} + {cant(1, 'tza', 'Verduras vapor')}",
-        "Cen": f"{cant(1, 'tza', 'Crema Calabaza')} + {cant(60, 'g', 'Queso Panela')}",
-        "Macros": {"CH": 190, "PRO": 105, "GR": 70}
-    },
-    "Miércoles": {
-        "Des": f"Licuado: {cant(250, 'ml', 'Leche')} + {cant(100, 'g', 'Plátano')} + {cant(15, 'g', 'Cacahuate')}",
-        "Com": f"{cant(150, 'g', 'Pescado')} + {cant(100, 'g', 'Arroz integral')}",
-        "Cen": f"{cant(3, 'pzas', 'Tacos lechuga')} + {cant(90, 'g', 'Pollo')}",
-        "Macros": {"CH": 210, "PRO": 125, "GR": 60}
-    },
-    "Jueves": {
-        "Des": f"{cant(150, 'g', 'Yogurt griego')} + {cant(80, 'g', 'Frutos rojos')}",
-        "Com": f"{cant(120, 'g', 'Carne magra')} + Ejotes + {cant(1, 'pza', 'Tortilla')}",
-        "Cen": f"{cant(2, 'pzas', 'Nopales')} + {cant(80, 'g', 'Queso Oaxaca')}",
-        "Macros": {"CH": 150, "PRO": 130, "GR": 65}
-    },
-    "Viernes": {
-        "Des": f"{cant(2, 'pzas', 'Hotcakes avena')} + {cant(50, 'g', 'Huevo')}",
-        "Com": f"{cant(1.5, 'tza', 'Pasta integral')} + {cant(100, 'g', 'Pollo')} + Salsa",
-        "Cen": f"Sándwich: {cant(2, 'rebs', 'Pan')} + {cant(60, 'g', 'Pavo')}",
-        "Macros": {"CH": 240, "PRO": 115, "GR": 55}
-    },
-    "Sábado": {
-        "Des": f"{cant(100, 'g', 'Huevos mexicana')} + {cant(1, 'pza', 'Tortilla')}",
-        "Com": f"{cant(150, 'g', 'Ceviche')} + {cant(2, 'pzas', 'Tostadas')}",
-        "Cen": f"Brochetas: {cant(80, 'g', 'Queso panela')} y Tomate",
-        "Macros": {"CH": 180, "PRO": 120, "GR": 75}
-    },
-    "Domingo": {
-        "Des": f"{cant(1, 'pza', 'Pan francés')} con canela",
-        "Com": f"{cant(1, 'pza', 'Pierna Pollo')} + Ensalada",
-        "Cen": f"{cant(1, 'pza', 'Quesadilla')} + Flor calabaza",
-        "Macros": {"CH": 200, "PRO": 100, "GR": 80}
-    }
-}
-
-if "Diabetes Tipo 2" in enfermedades:
-    menus["Lunes"]["Des"] = f"{cant(30, 'g', 'Avena')} + Nueces (Sin Manzana)"
-
-data_menu = []
-total_macros = {"Carbohidratos": 0, "Proteínas": 0, "Grasas": 0}
-
-for dia, info in menus.items():
-    ch = int(info["Macros"]["CH"] * f)
-    pro = int(info["Macros"]["PRO"] * f)
-    gr = int(info["Macros"]["GR"] * f)
-    kcal = (ch * 4) + (pro * 4) + (gr * 9)
-    total_macros["Carbohidratos"] += ch
-    total_macros["Proteínas"] += pro
-    total_macros["Grasas"] += gr
-
-    data_menu.append({
-        "Día": dia
+        "Macros": {"CH":
