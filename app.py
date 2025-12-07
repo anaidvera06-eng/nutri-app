@@ -8,7 +8,7 @@ st.set_page_config(page_title="Evaluación Nutricional", layout="wide")
 st.title("🍎 Sistema de Evaluación Nutricional Integral")
 st.markdown("""
 Calculadora clínica completa: GET, IMC, ICC, Peso Ideal y Complexión.
-Genera planes de alimentación con conteo de macronutrientes y porciones.
+**Menús dinámicos:** Las porciones se ajustan automáticamente a tus calorías.
 """)
 
 # --- BARRA LATERAL (DATOS) ---
@@ -106,7 +106,7 @@ with col_izq:
 with col_der:
     st.subheader("⚡ Requerimiento Energético")
     st.metric("Metabolismo Basal (TMB)", f"{int(tmb)} kcal")
-    st.metric("Gasto Total (GET)", f"{int(get)} kcal/día", "Mantenimiento")
+    st.metric("Gasto Total (GET)", f"{int(get)} kcal/día", "Meta Calórica")
     
     if "Diabetes Tipo 2" in enfermedades:
         st.warning("⚠️ Menú ajustado: bajo en azúcares simples.")
@@ -127,81 +127,56 @@ else:
 
 st.info(rutina)
 
-# --- MENÚ SEMANAL CON MACROS ---
+# --- MENÚ SEMANAL INTELIGENTE (AJUSTADO AL GET) ---
 st.markdown("---")
-st.header("🥗 Plan de Alimentación (Con Porciones y Macros)")
+st.header(f"🥗 Plan de Alimentación (Ajustado a {int(get)} kcal)")
 
-# Estructura de datos más compleja para incluir macros
-# CH = Carbohidratos (g), PRO = Proteínas (g), GR = Grasas (g)
+# Factor de Ajuste: Base 2000 kcal. 
+# Si el GET es 2000, f=1. Si es 1500, f=0.75 (reduce porciones).
+f = get / 2000 
+
+# Función para formatear texto de alimentos con cantidades ajustadas
+def cant(cantidad, unidad, alimento):
+    cantidad_ajustada = cantidad * f
+    # Redondeamos para que se vea bien (ej. 1.2 tzas)
+    if cantidad_ajustada < 0.2: return f"{cantidad_ajustada:.2f} {unidad} {alimento}"
+    return f"{cantidad_ajustada:.1f} {unidad} {alimento}"
+
 menus = {
     "Lunes": {
-        "Des": "1 tza Avena cocida + 1/2 Manzana + 10 Nueces",
-        "Com": "120g Pechuga asada + 1 tza Quinoa + Verduras",
-        "Cen": "1 lata Atún en agua + Ensalada mixta + 1 Tostada",
+        "Des": f"{cant(1, 'tza', 'Avena cocida')} + {cant(0.5, 'pza', 'Manzana')} + {cant(10, 'pzas', 'Nueces')}",
+        "Com": f"{cant(120, 'g', 'Pechuga asada')} + {cant(1, 'tza', 'Quinoa')} + Verduras libres",
+        "Cen": f"{cant(1, 'lata', 'Atún agua')} + Ensalada + {cant(1, 'pza', 'Tostada horneada')}",
         "Macros": {"CH": 220, "PRO": 110, "GR": 65}
     },
     "Martes": {
-        "Des": "2 Tostadas integrales + 1/3 Aguacate + 2 Huevos",
-        "Com": "1 tza Lentejas + 1 tza Verduras al vapor",
-        "Cen": "1 tza Crema de Calabaza + 50g Queso Panela",
+        "Des": f"{cant(2, 'pzas', 'Tostadas')} + {cant(0.3, 'pza', 'Aguacate')} + {cant(2, 'pzas', 'Huevos')}",
+        "Com": f"{cant(1, 'tza', 'Lentejas')} + {cant(1, 'tza', 'Verduras vapor')}",
+        "Cen": f"{cant(1, 'tza', 'Crema Calabaza')} + {cant(50, 'g', 'Queso Panela')}",
         "Macros": {"CH": 190, "PRO": 105, "GR": 70}
     },
     "Miércoles": {
-        "Des": "Licuado: 1 tza Leche light + 1 Plátano + 1 cda Crema cacahuate",
-        "Com": "150g Pescado empapelado + 1/2 tza Arroz integral",
-        "Cen": "3 Tacos de lechuga con 90g Pollo deshebrado",
+        "Des": f"Licuado: {cant(1, 'tza', 'Leche light')} + {cant(1, 'pza', 'Plátano')} + {cant(1, 'cda', 'Crema cacahuate')}",
+        "Com": f"{cant(150, 'g', 'Pescado empapelado')} + {cant(0.5, 'tza', 'Arroz integral')}",
+        "Cen": f"{cant(3, 'pzas', 'Tacos lechuga')} con {cant(90, 'g', 'Pollo')}",
         "Macros": {"CH": 210, "PRO": 125, "GR": 60}
     },
     "Jueves": {
-        "Des": "1 tza Yogurt griego sin azúcar + 1/2 tza Frutos rojos",
-        "Com": "120g Carne molida (res magra) + Ejotes + 1 Tortilla",
-        "Cen": "2 Nopales asados + 60g Queso Oaxaca + Salsa",
+        "Des": f"{cant(1, 'tza', 'Yogurt griego')} + {cant(0.5, 'tza', 'Frutos rojos')}",
+        "Com": f"{cant(120, 'g', 'Carne magra')} + Ejotes + {cant(1, 'pza', 'Tortilla')}",
+        "Cen": f"{cant(2, 'pzas', 'Nopales asados')} + {cant(60, 'g', 'Queso Oaxaca')}",
         "Macros": {"CH": 150, "PRO": 130, "GR": 65}
     },
     "Viernes": {
-        "Des": "2 Hotcakes de avena y plátano + 1 huevo",
-        "Com": "1 tza Pasta integral + 100g Pollo + Salsa tomate",
-        "Cen": "Sándwich: 2 rebanadas pan integral + 3 rebanadas Pavo",
+        "Des": f"{cant(2, 'pzas', 'Hotcakes avena')} + {cant(1, 'pza', 'Huevo')}",
+        "Com": f"{cant(1, 'tza', 'Pasta integral')} + {cant(100, 'g', 'Pollo')} + Salsa",
+        "Cen": f"Sándwich: {cant(2, 'rebs', 'Pan integral')} + {cant(3, 'rebs', 'Pavo')}",
         "Macros": {"CH": 240, "PRO": 115, "GR": 55}
     },
     "Sábado": {
-        "Des": "2 Huevos a la mexicana + 1 Tortilla maíz",
-        "Com": "Ceviche de pescado (150g) + 2 Tostadas",
-        "Cen": "Brochetas: Queso panela y Tomate cherry",
+        "Des": f"{cant(2, 'pzas', 'Huevos mexicana')} + {cant(1, 'pza', 'Tortilla maíz')}",
+        "Com": f"{cant(150, 'g', 'Ceviche pescado')} + {cant(2, 'pzas', 'Tostadas')}",
+        "Cen": f"Brochetas: Queso panela y Tomate cherry (Libre)",
         "Macros": {"CH": 180, "PRO": 120, "GR": 75}
     },
-    "Domingo": {
-        "Des": "1 Pan francés integral (con huevo y canela)",
-        "Com": "1 Pierna Pollo rostizado (sin piel) + Ensalada rusa",
-        "Cen": "1 Quesadilla (tortilla maíz) + Flor de calabaza",
-        "Macros": {"CH": 200, "PRO": 100, "GR": 80}
-    }
-}
-
-# Ajustes simples por enfermedad
-if "Diabetes Tipo 2" in enfermedades:
-    menus["Lunes"]["Des"] = "1/2 tza Avena + 10 Nueces (Sin Manzana)"
-    menus["Miércoles"]["Des"] = "Licuado: Leche de almendra + Fresas (Sin Plátano)"
-
-# Generar Tabla
-data_menu = []
-for dia, info in menus.items():
-    data_menu.append({
-        "Día": dia,
-        "Desayuno": info["Des"],
-        "Colación 1": "1 Fruta (Manzana/Pera)",
-        "Comida": info["Com"],
-        "Colación 2": "1 Gelatina Light",
-        "Cena": info["Cen"],
-        "Carbos (g)": info["Macros"]["CH"],
-        "Proteína (g)": info["Macros"]["PRO"],
-        "Grasas (g)": info["Macros"]["GR"]
-    })
-
-df = pd.DataFrame(data_menu)
-st.dataframe(df, use_container_width=True, hide_index=True)
-
-st.caption("Nota: Los valores de macronutrientes son estimaciones promedio para fines educativos.")
-
-# Botón Descarga
-st.download_button("📥 Descargar Plan (CSV)", df.to_csv(index=False).encode('utf-8'), "dieta_completa.csv", "text/csv")
+    "
