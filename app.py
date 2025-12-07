@@ -20,11 +20,11 @@ muneca = st.sidebar.number_input("Perímetro Muñeca (cm)", 10.0, 30.0, 17.0)
 
 st.sidebar.header("Estilo de Vida")
 act_opciones = [
-    "Sedentario (Factor 1.2)",
-    "Ligero (Factor 1.375)",
-    "Moderado (Factor 1.55)",
-    "Intenso (Factor 1.725)",
-    "Muy Intenso (Factor 1.9)"
+    "Sedentario (Menos de 1 hora de ejercicio/semana)",
+    "Ligero (1 a 3 horas de ejercicio/semana)",
+    "Moderado (3 a 6 horas de ejercicio/semana)",
+    "Intenso (6 a 10 horas de ejercicio/semana)",
+    "Muy Intenso (Más de 10 horas/semana o doble sesión)"
 ]
 actividad = st.sidebar.selectbox("Nivel de Actividad Física", act_opciones)
 medicamentos = st.sidebar.text_area("Farmacología Actual", "Ninguno")
@@ -209,4 +209,5 @@ st.download_button(
 )
 
 st.warning("⚠️ **AVISO IMPORTANTE:** Esta aplicación es una herramienta de apoyo educativo y cálculo preliminar. Los resultados aquí mostrados **NO sustituyen** el diagnóstico, tratamiento o asesoría de un Licenciado en Nutrición o Médico especialista. Se recomienda acudir a consulta profesional para un plan personalizado.")
+
 
