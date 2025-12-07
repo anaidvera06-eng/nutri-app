@@ -1,38 +1,38 @@
 import streamlit as st
 import pandas as pd
 
-# --- 1. CONFIGURACIÓN DE PÁGINA ---
-st.set_page_config(page_title="NutriPro", layout="wide")
-st.title("🍎 Sistema Profesional de Evaluación Nutricional")
-st.markdown("Calculadora clínica completa: ICC, Complexión, GET, Peso Ideal y Menú detallado con Macros en Kcal.")
+# --- 1. CONFIGURACIÓN ---
+st.set_page_config(page_title="NutriPro Meta", layout="wide")
+st.title("🍎 Sistema Nutricional: Meta Peso Ideal")
+st.markdown("Calcula el requerimiento exacto para llegar al **Peso Ideal** y genera el menú acorde.")
 
-# --- 2. BARRA LATERAL (DATOS COMPLETOS) ---
+# --- 2. DATOS DEL PACIENTE ---
 st.sidebar.header("1. Datos Personales")
-nombre = st.sidebar.text_input("Nombre Paciente", "Paciente")
+nombre = st.sidebar.text_input("Nombre", "Paciente")
 genero = st.sidebar.selectbox("Género", ["Masculino", "Femenino"])
 edad = st.sidebar.number_input("Edad", 10, 100, 25)
-peso = st.sidebar.number_input("Peso (kg)", 30.0, 200.0, 70.0)
+peso = st.sidebar.number_input("Peso Actual (kg)", 30.0, 200.0, 80.0) # Puse 80kg para probar reducción
 talla = st.sidebar.number_input("Talla (cm)", 100, 250, 170)
 
-st.sidebar.header("2. Antropometría")
-cintura = st.sidebar.number_input("Cintura (cm)", 40.0, 200.0, 80.0)
-cadera = st.sidebar.number_input("Cadera (cm)", 40.0, 200.0, 95.0)
-muneca = st.sidebar.number_input("Muñeca (cm)", 10.0, 30.0, 16.0)
-
-st.sidebar.header("3. Antecedentes")
+st.sidebar.header("2. Medidas y Estilo de Vida")
+cintura = st.sidebar.number_input("Cintura (cm)", 50.0, 200.0, 90.0)
+cadera = st.sidebar.number_input("Cadera (cm)", 50.0, 200.0, 105.0)
+muneca = st.sidebar.number_input("Muñeca (cm)", 10.0, 30.0, 17.0)
 actividad = st.sidebar.selectbox("Nivel Actividad", 
     ["Sedentario (1.2)", "Ligero (1.375)", "Moderado (1.55)", "Intenso (1.725)"])
 medicamentos = st.sidebar.text_area("Medicamentos", "Ninguno")
 
-# --- 3. CÁLCULOS CLÍNICOS (BACKEND) ---
+# --- 3. CÁLCULOS CLÍNICOS ---
+
+# A) Antropometría
 talla_m = talla / 100
 imc = peso / (talla_m ** 2)
 
-# Peso Ideal
+# Peso Ideal (Lorentz/Broca ajustado)
 factor_pi = 23 if genero == "Masculino" else 21.5
 peso_ideal = (talla_m ** 2) * factor_pi
 
-# Complexión (R = Talla/Muñeca)
+# Complexión
 r = talla / muneca
 complexion = "Mediana"
 if genero == "Masculino":
@@ -42,58 +42,45 @@ else:
     if r > 11: complexion = "Pequeña"
     elif r < 10.1: complexion = "Grande"
 
-# ICC (Cintura/Cadera)
+# ICC
 icc = cintura / cadera
 riesgo_icc = "Bajo"
 limite = 0.90 if genero == "Masculino" else 0.85
 if icc >= limite: riesgo_icc = "Alto (Obesidad Central)"
 
-# TMB (Mifflin-St Jeor) y GET
+# B) Energética (Mifflin-St Jeor)
 if genero == "Masculino":
     tmb = (10 * peso) + (6.25 * talla) - (5 * edad) + 5
 else:
     tmb = (10 * peso) + (6.25 * talla) - (5 * edad) - 161
 
-# Factor actividad
-if "Sedentario" in actividad: fa = 1.2
-elif "Ligero" in actividad: fa = 1.375
-elif "Moderado" in actividad: fa = 1.55
-else: fa = 1.725
-get = tmb * fa
+# Factor Actividad
+fa = 1.2
+if "Ligero" in actividad: fa = 1.375
+if "Moderado" in actividad: fa = 1.55
+if "Intenso" in actividad: fa = 1.725
 
-# --- 4. RESULTADOS VISUALES ---
+get_mantenimiento = tmb * fa
+
+# C) CÁLCULO DE LA META (Lógica para llegar al Peso Ideal)
+# Estrategia clínica estándar: +/- 500 kcal para cambio sostenible
+objetivo = "Mantener Peso"
+get_meta = get_mantenimiento
+
+if imc > 25.0: # Sobrepeso/Obesidad
+    objetivo = "PERDER PESO (Déficit)"
+    get_meta = get_mantenimiento - 500 # Déficit estándar
+    if get_meta < 1200: get_meta = 1200 # Límite de seguridad
+elif imc < 18.5: # Bajo Peso
+    objetivo = "GANAR PESO (Superávit)"
+    get_meta = get_mantenimiento + 300 # Superávit moderado
+
+# --- 4. MOSTRAR DIAGNÓSTICO ---
 st.markdown("---")
-col1, col2, col3 = st.columns(3)
+c1, c2, c3 = st.columns(3)
 
-with col1:
-    st.subheader("📊 Antropometría")
-    st.metric("IMC", f"{imc:.1f}", f"Ideal: {peso_ideal:.1f}kg")
-    st.metric("Complexión", complexion, f"r={r:.1f}")
-    st.metric("ICC (Grasa)", f"{icc:.2f}", riesgo_icc)
-
-with col2:
-    st.subheader("⚡ Metabolismo")
-    st.metric("Gasto Basal (TMB)", f"{int(tmb)} kcal")
-    st.metric("Gasto Total (GET)", f"{int(get)} kcal", "Meta Diaria")
-
-with col3:
-    st.subheader("💊 Clínico")
-    st.info(f"**Medicamentos:** {medicamentos}")
-    st.write(f"**Hidratación:** {int(peso*35)} ml/día")
-
-# --- 5. MENÚ INTELIGENTE (GRAMOS Y MACROS EN KCAL) ---
-st.markdown("---")
-st.header(f"🥗 Menú Detallado ({int(get)} kcal)")
-
-# Factor de ajuste para las porciones
-f = get / 2000
-
-# Función segura para crear filas del menú (Anti-Error)
-def agregar_dia(dia, des, com, cen, carbo_g, prot_g, gras_g):
-    # Ajustar gramos de macros
-    ch_g = carbo_g * f
-    pr_g = prot_g * f
-    gr_g = gras_g * f
-    
-    # Calcular Kcal aportadas por cada macro
-    kcal_ch = ch_g * 4
+with c1:
+    st.subheader("📊 Diagnóstico")
+    st.metric("Peso Actual", f"{peso} kg", f"IMC: {imc:.1f}")
+    st.metric("Peso Ideal Meta", f"{peso_ideal:.1f} kg", complexion)
+    st.write(f"**ICC:** {icc:.2f}
