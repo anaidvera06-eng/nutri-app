@@ -2,13 +2,13 @@ import streamlit as st
 import pandas as pd
 
 # --- CONFIGURACIÓN DE LA PÁGINA ---
-st.set_page_config(page_title="NutriGenius Pro", layout="wide")
+st.set_page_config(page_title="Evaluación Nutricional", layout="wide")
 
-# --- TÍTULO ---
+# --- TÍTULO PRINCIPAL ---
 st.title("🍎 Sistema de Evaluación Nutricional Integral")
 st.markdown("""
-Calculadora clínica de GET, IMC, ICC, Peso Ideal y Complexión Corporal.
-Genera planes de alimentación y ejercicio personalizados.
+Calculadora clínica completa: GET, IMC, ICC, Peso Ideal y Complexión.
+Genera planes de alimentación con conteo de macronutrientes y porciones.
 """)
 
 # --- BARRA LATERAL (DATOS) ---
@@ -44,14 +44,12 @@ talla_m = talla / 100
 imc = peso / (talla_m ** 2)
 
 # 2. Peso Ideal (Fórmula solicitada)
-# Mujeres: Talla^2 * 21.5 | Hombres: Talla^2 * 23
 factor_peso_ideal = 23 if genero == "Masculino" else 21.5
 peso_ideal = (talla_m ** 2) * factor_peso_ideal
 
 # 3. ICC (Índice Cintura-Cadera)
 icc = cintura / cadera
 riesgo_icc = "Bajo"
-# Puntos de corte estándar (OMS): Hombres >= 0.90, Mujeres >= 0.85
 if genero == "Masculino":
     if icc >= 0.90: riesgo_icc = "Obesidad Central (Riesgo Alto)"
 else:
@@ -59,7 +57,7 @@ else:
 
 # 4. Complexión Corporal (r = talla / muñeca)
 r = talla / muneca
-complexion = "Mediana" # Valor default
+complexion = "Mediana" 
 
 if genero == "Masculino":
     if r > 10.4: complexion = "Pequeña"
@@ -99,77 +97,111 @@ with col_izq:
     elif imc >= 30: estado_imc = "Obesidad"
     st.metric("IMC Actual", f"{imc:.1f}", estado_imc)
     
-    # Peso Ideal y Complexión
     col_a, col_b = st.columns(2)
-    col_a.metric("Peso Ideal Sugerido", f"{peso_ideal:.1f} kg")
-    col_b.metric("Complexión Corporal", complexion, f"r={r:.1f}")
+    col_a.metric("Peso Ideal", f"{peso_ideal:.1f} kg")
+    col_b.metric("Complexión", complexion, f"r={r:.1f}")
     
-    # ICC
-    st.metric("Índice Cintura-Cadera (ICC)", f"{icc:.2f}", riesgo_icc)
+    st.metric("ICC (Cintura-Cadera)", f"{icc:.2f}", riesgo_icc)
 
 with col_der:
     st.subheader("⚡ Requerimiento Energético")
     st.metric("Metabolismo Basal (TMB)", f"{int(tmb)} kcal")
     st.metric("Gasto Total (GET)", f"{int(get)} kcal/día", "Mantenimiento")
     
-    st.info(f"💡 **Estrategia:** Para llegar a tu peso ideal de **{peso_ideal:.1f} kg**, se sugiere ajustar calorías y actividad.")
-    
     if "Diabetes Tipo 2" in enfermedades:
-        st.warning("⚠️ Plan ajustado para control glucémico.")
+        st.warning("⚠️ Menú ajustado: bajo en azúcares simples.")
     if "Hipertensión" in enfermedades:
-        st.warning("⚠️ Plan bajo en sodio.")
+        st.warning("⚠️ Menú ajustado: bajo en sodio.")
 
 # --- PLAN DE ACTIVIDAD FÍSICA ---
 st.markdown("---")
-st.header("🏃 Rutina de Ejercicio Personalizada")
+st.header("🏃 Rutina de Ejercicio")
 
 rutina = ""
 if "Sedentario" in actividad or "Ligero" in actividad:
-    rutina = "**Fase de Activación:**\n* 🚶 Caminata a paso veloz: 30 min (3-4 veces/sem)\n* 🧘 Estiramientos: 10 min diarios."
+    rutina = "**Activación:** 🚶 Caminata veloz: 30 min (3-4 veces/sem) + 🧘 Estiramientos."
 elif "Moderado" in actividad:
-    rutina = "**Fase de Mantenimiento:**\n* 🏃 Trote/Bici: 45 min (3 veces/sem)\n* 💪 Fuerza (peso corporal): 20 min (2 veces/sem)."
+    rutina = "**Mantenimiento:** 🏃 Trote/Bici: 45 min (3 veces/sem) + 💪 Fuerza ligera."
 else:
-    rutina = "**Fase Deportiva:**\n* 🏋️ Pesas/Gimnasio: 60 min (4 veces/sem)\n* ⚡ HIIT/Cardio Intenso: 20 min (2 veces/sem)."
+    rutina = "**Rendimiento:** 🏋️ Pesas: 60 min (4 veces/sem) + ⚡ Cardio HIIT."
 
 st.info(rutina)
 
-# --- MENÚ SEMANAL ---
+# --- MENÚ SEMANAL CON MACROS ---
 st.markdown("---")
-st.header("🥗 Plan de Alimentación Semanal")
+st.header("🥗 Plan de Alimentación (Con Porciones y Macros)")
 
-# Base de menús
+# Estructura de datos más compleja para incluir macros
+# CH = Carbohidratos (g), PRO = Proteínas (g), GR = Grasas (g)
 menus = {
-    "Lunes": {"Des": "Avena cocida con manzana", "Com": "Pechuga asada + Quinoa", "Cen": "Ensalada de Atún"},
-    "Martes": {"Des": "Tostadas con aguacate y huevo", "Com": "Lentejas con verduras", "Cen": "Crema de Calabaza"},
-    "Miércoles": {"Des": "Licuado de fresa y nuez", "Com": "Pescado empapelado + Arroz", "Cen": "Tacos de lechuga con pollo"},
-    "Jueves": {"Des": "Yogurt griego con fruta", "Com": "Carne molida con ejotes", "Cen": "Nopales asados con queso"},
-    "Viernes": {"Des": "Hotcakes de avena", "Com": "Pasta integral con pollo", "Cen": "Sándwich de pavo"},
-    "Sábado": {"Des": "Huevos a la mexicana", "Com": "Ceviche de pescado", "Cen": "Brochetas de queso y tomate"},
-    "Domingo": {"Des": "Pan francés integral", "Com": "Pollo rostizado (sin piel)", "Cen": "Quesadillas (tortilla maíz)"}
+    "Lunes": {
+        "Des": "1 tza Avena cocida + 1/2 Manzana + 10 Nueces",
+        "Com": "120g Pechuga asada + 1 tza Quinoa + Verduras",
+        "Cen": "1 lata Atún en agua + Ensalada mixta + 1 Tostada",
+        "Macros": {"CH": 220, "PRO": 110, "GR": 65}
+    },
+    "Martes": {
+        "Des": "2 Tostadas integrales + 1/3 Aguacate + 2 Huevos",
+        "Com": "1 tza Lentejas + 1 tza Verduras al vapor",
+        "Cen": "1 tza Crema de Calabaza + 50g Queso Panela",
+        "Macros": {"CH": 190, "PRO": 105, "GR": 70}
+    },
+    "Miércoles": {
+        "Des": "Licuado: 1 tza Leche light + 1 Plátano + 1 cda Crema cacahuate",
+        "Com": "150g Pescado empapelado + 1/2 tza Arroz integral",
+        "Cen": "3 Tacos de lechuga con 90g Pollo deshebrado",
+        "Macros": {"CH": 210, "PRO": 125, "GR": 60}
+    },
+    "Jueves": {
+        "Des": "1 tza Yogurt griego sin azúcar + 1/2 tza Frutos rojos",
+        "Com": "120g Carne molida (res magra) + Ejotes + 1 Tortilla",
+        "Cen": "2 Nopales asados + 60g Queso Oaxaca + Salsa",
+        "Macros": {"CH": 150, "PRO": 130, "GR": 65}
+    },
+    "Viernes": {
+        "Des": "2 Hotcakes de avena y plátano + 1 huevo",
+        "Com": "1 tza Pasta integral + 100g Pollo + Salsa tomate",
+        "Cen": "Sándwich: 2 rebanadas pan integral + 3 rebanadas Pavo",
+        "Macros": {"CH": 240, "PRO": 115, "GR": 55}
+    },
+    "Sábado": {
+        "Des": "2 Huevos a la mexicana + 1 Tortilla maíz",
+        "Com": "Ceviche de pescado (150g) + 2 Tostadas",
+        "Cen": "Brochetas: Queso panela y Tomate cherry",
+        "Macros": {"CH": 180, "PRO": 120, "GR": 75}
+    },
+    "Domingo": {
+        "Des": "1 Pan francés integral (con huevo y canela)",
+        "Com": "1 Pierna Pollo rostizado (sin piel) + Ensalada rusa",
+        "Cen": "1 Quesadilla (tortilla maíz) + Flor de calabaza",
+        "Macros": {"CH": 200, "PRO": 100, "GR": 80}
+    }
 }
 
-# Ajustes patológicos simples
+# Ajustes simples por enfermedad
 if "Diabetes Tipo 2" in enfermedades:
-    menus["Lunes"]["Des"] = "Avena (reducida) + Claras"
-    menus["Viernes"]["Des"] = "Omelet de espinaca"
-if "Hipertensión" in enfermedades:
-    menus["Lunes"]["Cen"] = "Ensalada (sin sal añadida)"
+    menus["Lunes"]["Des"] = "1/2 tza Avena + 10 Nueces (Sin Manzana)"
+    menus["Miércoles"]["Des"] = "Licuado: Leche de almendra + Fresas (Sin Plátano)"
 
 # Generar Tabla
 data_menu = []
-for dia, comidas in menus.items():
+for dia, info in menus.items():
     data_menu.append({
         "Día": dia,
-        "Desayuno": comidas["Des"],
-        "Colación 1": "Fruta o Semillas",
-        "Comida": comidas["Com"],
-        "Colación 2": "Gelatina light o Yogurt",
-        "Cena": comidas["Cen"]
+        "Desayuno": info["Des"],
+        "Colación 1": "1 Fruta (Manzana/Pera)",
+        "Comida": info["Com"],
+        "Colación 2": "1 Gelatina Light",
+        "Cena": info["Cen"],
+        "Carbos (g)": info["Macros"]["CH"],
+        "Proteína (g)": info["Macros"]["PRO"],
+        "Grasas (g)": info["Macros"]["GR"]
     })
 
 df = pd.DataFrame(data_menu)
 st.dataframe(df, use_container_width=True, hide_index=True)
 
-# Botón Descarga
-st.download_button("📥 Descargar Plan (CSV)", df.to_csv(index=False).encode('utf-8'), "dieta.csv", "text/csv")
+st.caption("Nota: Los valores de macronutrientes son estimaciones promedio para fines educativos.")
 
+# Botón Descarga
+st.download_button("📥 Descargar Plan (CSV)", df.to_csv(index=False).encode('utf-8'), "dieta_completa.csv", "text/csv")
