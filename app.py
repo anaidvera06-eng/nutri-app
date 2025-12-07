@@ -179,4 +179,47 @@ menus = {
         "Cen": f"Brochetas: Queso panela y Tomate cherry (Libre)",
         "Macros": {"CH": 180, "PRO": 120, "GR": 75}
     },
-    "
+    "Domingo": {
+        "Des": f"{cant(1, 'pza', 'Pan francés integral')} con canela",
+        "Com": f"{cant(1, 'pza', 'Pierna Pollo')} sin piel + Ensalada",
+        "Cen": f"{cant(1, 'pza', 'Quesadilla maíz')} + Flor calabaza",
+        "Macros": {"CH": 200, "PRO": 100, "GR": 80}
+    }
+}
+
+# Ajustes Patológicos
+if "Diabetes Tipo 2" in enfermedades:
+    menus["Lunes"]["Des"] = f"{cant(0.5, 'tza', 'Avena')} + Nueces (Sin Manzana)"
+
+# Generar Tabla
+data_menu = []
+for dia, info in menus.items():
+    # Ajustar Macros proporcionalmente al GET
+    ch_ajustado = int(info["Macros"]["CH"] * f)
+    pro_ajustado = int(info["Macros"]["PRO"] * f)
+    gr_ajustado = int(info["Macros"]["GR"] * f)
+    
+    # Calcular Kcal Totales del día (4 kcal por g de CH/PRO, 9 kcal por g de GR)
+    kcal_dia = (ch_ajustado * 4) + (pro_ajustado * 4) + (gr_ajustado * 9)
+
+    data_menu.append({
+        "Día": dia,
+        "Desayuno": info["Des"],
+        "Colación 1": cant(1, "pza", "Fruta"),
+        "Comida": info["Com"],
+        "Colación 2": cant(1, "pza", "Gelatina Light"),
+        "Cena": info["Cen"],
+        "Carbos (g)": ch_ajustado,
+        "Proteína (g)": pro_ajustado,
+        "Grasas (g)": gr_ajustado,
+        "Kcal Totales": kcal_dia 
+    })
+
+df = pd.DataFrame(data_menu)
+st.dataframe(df, use_container_width=True, hide_index=True)
+
+st.success(f"✅ Menú calculado para cubrir aproximadamente **{int(get)} kcal** diarias.")
+st.caption("Nota: Las porciones se han ajustado automáticamente según tu requerimiento energético (GET).")
+
+# Botón Descarga
+st.download_button("📥 Descargar Plan (CSV)", df.to_csv(index=False).encode('utf-8'), "dieta_personalizada.csv", "text/csv")
